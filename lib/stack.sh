@@ -18,6 +18,7 @@
 source "./console.sh"
 
 stack() {
+
   local operation="$1"
   shift
 
@@ -36,11 +37,29 @@ stack() {
         push)
             # pre-conditions:
             #[[ "$#" -lt 2 ]] && log_failure "[push must be followed by two params]" && return 1
-            [[ "$#" -ne 2 ]] && log_failure "[push must be followed by two params]" && return 1
+            #[[ "$#" -ne 2 ]] && log_failure "[push must be followed by two params]" && return 1
 
-            declare -n stack_name="$1"
-            local value="$2"
-            stack_name+=( "$value" )
+            if [[ "$#" -eq 1 ]]; then
+
+              unset input_from_std
+              readarray -t input_from_std
+
+              declare -n stack_name="$1"
+              declare -p stack_name
+              echo ${#stack_name[@]}
+              a=0
+              for i in "${input_from_std[@]}"
+                do
+                  echo ${#stack_name[@]} -----  "$i" ----- ${stack_name[a]}
+                  (( a++ ))
+                  stack_name+=( "$i" )
+                done
+            elif [[ "$#" -eq 2 ]]; then
+              declare -n stack_name="$1"
+              declare -p stack_name
+              local value="$2"
+              stack_name+=( "$value" )
+            fi
 
             ;;
 
@@ -115,10 +134,11 @@ stack() {
             ;;
 
         *)
-            echo $"Usage: $0 { create | push "\
-              " | pop | top | clear "\
-              " | empty | destroy }"
-            exit 1
+
+              echo $"Usage: $0 { create | push "\
+                " | pop | top | clear "\
+                " | empty | destroy }"
+              return 1
 
   esac
 
